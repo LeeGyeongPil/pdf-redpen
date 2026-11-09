@@ -13,7 +13,7 @@ from .grounding import ground
 from .models import Finding, InputError, Match, Report
 from .writer import DEFAULT_AUTHOR
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 __all__ = ["Finding", "Match", "Report", "InputError", "ground", "annotate_pdf", "__version__"]
 
 

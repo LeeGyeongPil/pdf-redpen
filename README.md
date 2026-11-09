@@ -120,7 +120,7 @@ pdf-redpen clear cap3.pdf -o clean.pdf
 ![상한 3 적용 후 1쪽: 형광펜 3개와 오른쪽 위 쪽 메모 아이콘](docs/images/05-cap3-page1.png)
 *상한을 넘은 지적은 오른쪽 위 노란 메모 아이콘 하나에 `[상한 초과]` 목록으로 모입니다.*
 
-`clear`는 `/T`(작성자)가 `pdf-redpen`인 주석만 지우므로, 사람이 단 주석은 남습니다.
+`clear`는 `/T`(작성자)가 `pdf-redpen`인 주석만 지우므로, 사람이 단 주석은 남습니다. `review --author 이름`으로 작성자를 바꿔 달았다면 지울 때도 `pdf-redpen clear a.pdf -o b.pdf --author 이름`을 줘야 합니다. `apply`도 `review`처럼 출력 PDF 옆에 `<이름>.report.json`·`<이름>.report.md`를 만듭니다.
 
 ## 리포트 읽는 법
 `review`·`demo`는 출력 PDF 옆에 `<이름>.report.json`(기계용)과 `<이름>.report.md`(사람용)를 함께 만듭니다(예: `out/reviewed.report.md`). 터미널에 안 보이는 세부는 여기에 있습니다.
@@ -271,4 +271,4 @@ uv run pytest
 - 같은 계열 도구: https://github.com/neuml/annotateai, https://github.com/onekin/AnnotateGPT
 
 ## 라이선스
-MIT. 직접 의존성: pdfplumber(MIT), pypdf(BSD-3-Clause)(간접 의존성은 pypdfium2·cryptography 등 Apache-2.0/BSD 계열). 샘플 PDF의 글꼴·출처는 [NOTICE.md](NOTICE.md).
+MIT. 직접 의존성: pdfplumber(MIT), pypdf(BSD-3-Clause), Pillow(MIT-CMU)(간접 의존성은 pypdfium2·cryptography 등 Apache-2.0/BSD 계열). 샘플 PDF의 글꼴·출처는 [NOTICE.md](NOTICE.md).
