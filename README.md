@@ -20,12 +20,12 @@ LLM 검토 결과의 "3쪽 어딘가의 이 문장" 메모를, 원본 PDF의 **�
 ```bash
 # 전제: uv (Python 패키지 관리자). 이미 있으면 건너뜁니다.
 curl -LsSf https://astral.sh/uv/install.sh | sh
-# 도구 설치 (Python 3.10 이상)
+# 도구 설치 (Python 3.11 이상)
 uv tool install git+https://github.com/LeeGyeongPil/pdf-redpen
 ```
 설치하지 않고 클론해서 써도 됩니다: `git clone https://github.com/LeeGyeongPil/pdf-redpen && cd pdf-redpen && uv sync && uv run pdf-redpen --version`
 
-최소 리눅스(예: slim 컨테이너)에서는 `curl`, `git`, `ca-certificates`가 필요합니다. PDF 처리는 순수 Python 의존성(pdfplumber, pypdf)이라 별도 시스템 라이브러리가 필요 없습니다.
+최소 리눅스(예: slim 컨테이너)에서는 `curl`, `git`, `ca-certificates`가 필요합니다. PDF 처리 의존성(pdfplumber, pypdf, Pillow)은 모두 휠(wheel)로 설치되므로 별도 시스템 라이브러리가 필요 없습니다.
 
 ## 빠르게 시작하기
 키도 모델도 필요 없습니다.
@@ -239,7 +239,7 @@ for p in report.placements:
 ## 다른 도구와 비교
 | | pdf-redpen | groupdocs ai-document-review-annotations-net | zotero-mcp |
 |---|---|---|---|
-| 언어·형태 | Python CLI, 직접 의존성 MIT/BSD(간접 의존성 포함 모두 허용적 라이선스) | .NET, 상용 SDK 필요 | MCP 서버 |
+| 언어·형태 | Python CLI, 직접 의존성 MIT·BSD·MIT-CMU(간접 의존성 포함 모두 허용적 라이선스) | .NET, 상용 SDK 필요 | MCP 서버 |
 | 위치 찾기 | 5단계 느슨 일치, 못 찾으면 쪽 메모 | 한 줄 포함·연속 줄 결합 위주 | 단계적 매칭(앵커→정확→퍼지) |
 | 대상 | 독립 PDF 파일 | 문서 파일 | Zotero 안의 주석(Zotero 라이브러리, 실행·인증 필요) |
 | 더 나은 점(상대) | | 여러 문서 형식 지원 | 논문 관리 흐름과 통합 |
