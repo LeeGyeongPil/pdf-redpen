@@ -4,10 +4,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pdf-redpen"
-version = "0.1.0"
+version = "0.1.1"
 description = "Ground quotes from an LLM review to real PDF coordinates and mark them as standard highlight + note annotations."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "LeeGyeongPil" }]
@@ -20,6 +20,7 @@ classifiers = [
 dependencies = [
   "pdfplumber==0.11.10",
   "pypdf==7.0.0",
+  "pillow>=13.0.0",
 ]
 
 [project.scripts]
