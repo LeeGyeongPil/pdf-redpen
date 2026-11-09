@@ -13,7 +13,7 @@ def test_default_deps_permissive():
     text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
     block = re.search(r"^dependencies = \[(.*?)\]", text, re.S | re.M).group(1)
     deps = sorted(re.findall(r'"([^"]+)"', block))
-    assert deps == ["pdfplumber==0.11.10", "pypdf==7.0.0"]
+    assert deps == ["pdfplumber==0.11.10", "pillow>=13.0.0", "pypdf==7.0.0"]
 
     code = (
         "import sys, tempfile, pdf_redpen\n"
