@@ -1,0 +1,12 @@
+[
+  {"page": 1, "quote": "근거 표가 제시되지 않았습니다", "comment": "근거 표 추가 필요", "severity": "high"},
+  {"page": 1, "quote": "이 보고서는 2025년 매출이 전년 대비 15% 증가했다고 주장하지만", "comment": "출처 명시", "severity": "medium"},
+  {"page": 1, "quote": "신규  고객 수는\n1,200명으로", "comment": "숫자 불일치 (1,200 vs 1,300)", "severity": "high"},
+  {"page": 1, "quote": "다른절에서는1,300명이라고", "comment": "숫자 불일치", "severity": "high"},
+  {"page": 1, "quote": "\"The quarterly revenue grew by fifteen-percent!\"", "comment": "Cite the table", "severity": "low"},
+  {"page": 1, "quote": "intentionally wraps across several lines so that a quoted passage will NOT match exactly (paraphrased tail)", "comment": "tail paraphrased", "severity": "low"},
+  {"page": 2, "quote": "결론 문장은 다시 한번 결론 문장으로 반복됩니다", "comment": "중복 문장 1", "severity": "low"},
+  {"page": 2, "quote": "결론 문장은 다시 한번 결론 문장으로 반복됩니다", "comment": "중복 문장 2 (다음 출현이어야 함)", "severity": "low"},
+  {"page": 1, "quote": "세 항목은 여전히 진행 중입니다", "comment": "모델이 쪽수를 틀림 (실제 2쪽)", "severity": "medium"},
+  {"page": 2, "quote": "존재하지 않는 문장입니다", "comment": "못 찾으면 페이지 메모로", "severity": "high"}
+]
