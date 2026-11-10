@@ -50,6 +50,23 @@ def nfc(text: str) -> str:
     return unicodedata.normalize("NFC", text)
 
 
+def _fold_char(ch: str) -> str:
+    # Hangul compatibility jamo (U+3130..U+318F) are left alone: NFKC would turn
+    # them into conjoining jamo that a per-Char flat string and a whole-quote
+    # normalisation could then merge differently.
+    if "㄰" <= ch <= "㆏":
+        return ch
+    return unicodedata.normalize("NFKC", ch)
+
+
+def fold(text: str) -> str:
+    """NFC, then compatibility-fold each character (ligatures such as fi/fl get spelled out).
+
+    Used for both the page text and the quote, so the two always agree.
+    """
+    return "".join(_fold_char(ch) for ch in nfc(text))
+
+
 def build_flat(chars: list[Char]) -> tuple[str, list]:
     """Join chars into one string; a synthetic space marks each line break.
 
@@ -63,7 +80,7 @@ def build_flat(chars: list[Char]) -> tuple[str, list]:
         if prev_line is not None and c.line != prev_line:
             out.append(" ")
             idx.append(None)
-        piece = nfc(c.text)
+        piece = fold(c.text)
         for ch in piece:
             out.append(ch)
             idx.append(i)

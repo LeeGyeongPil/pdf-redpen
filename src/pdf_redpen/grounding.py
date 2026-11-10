@@ -13,7 +13,7 @@ import re
 from typing import Callable, Optional
 
 from .models import Match
-from .textlayer import PageText, nfc
+from .textlayer import PageText, fold
 
 PREFIX_LEN = 25
 ALNUM_MIN = 4
@@ -60,7 +60,7 @@ def _collapse(flat: str, idx: list) -> tuple[str, list]:
 
 def ground(page: PageText, quote: str, used: set[int]) -> Optional[Match]:
     """Find `quote` on one page, avoiding char indices in `used`. None if absent."""
-    quote = nfc(quote).strip()
+    quote = fold(quote).strip()
     if not quote:
         return None
     flat, idx = page.flat, page.index_map
