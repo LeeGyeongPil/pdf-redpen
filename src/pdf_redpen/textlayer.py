@@ -71,7 +71,7 @@ def build_flat(chars: list[Char]) -> tuple[str, list]:
     """Join chars into one string; a synthetic space marks each line break.
 
     index_map[i] is the index of the Char that produced flat[i], or None for a
-    synthetic space. NFC may turn one char into several, all map to that Char.
+    synthetic space. Folding (NFC, then NFKC per char) may turn one char into several, all map to that Char.
     """
     out: list[str] = []
     idx: list = []
