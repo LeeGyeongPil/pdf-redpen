@@ -236,15 +236,11 @@ for p in report.placements:
 - 뷰어마다 형광펜·메모 모양이 조금 다를 수 있습니다.
 - 실제 모드는 모델 속도에 좌우되고, 쪽 글자가 엔드포인트로 전송됩니다.
 
-## 다른 도구와 비교
-| | pdf-redpen | groupdocs ai-document-review-annotations-net | zotero-mcp |
-|---|---|---|---|
-| 언어·형태 | Python CLI, 직접 의존성 MIT·BSD·MIT-CMU(간접 의존성 포함 모두 허용적 라이선스) | .NET, 상용 SDK 필요 | MCP 서버 |
-| 위치 찾기 | 5단계 느슨 일치, 못 찾으면 쪽 메모 | 한 줄 포함·연속 줄 결합 위주 | 단계적 매칭(앵커→정확→퍼지) |
-| 대상 | 독립 PDF 파일 | 문서 파일 | Zotero 안의 주석(Zotero 라이브러리, 실행·인증 필요) |
-| 더 나은 점(상대) | | 여러 문서 형식 지원 | 논문 관리 흐름과 통합 |
-
-(2026-11-09 조사: https://github.com/groupdocs-annotation/ai-document-review-annotations-net, https://github.com/54yyyu/zotero-mcp)
+## 언제 쓰나
+- 독립 PDF 파일에 LLM이나 다른 도구가 내놓은 지적을 원문 위치 주석으로 달고 싶다면 이 도구가 맞습니다. 위치를 못 찾은 지적은 쪽 메모로 남깁니다.
+- 여러 문서 형식을 다루거나 .NET 환경이라면 [groupdocs ai-document-review-annotations-net](https://github.com/groupdocs-annotation/ai-document-review-annotations-net)을 살펴보세요.
+- Zotero 라이브러리 안에서 논문 주석을 관리한다면 [zotero-mcp](https://github.com/54yyyu/zotero-mcp)를 살펴보세요.
+- 다른 도구의 기능은 바뀔 수 있으니 세부 내용은 각 링크에서 직접 확인해 주세요. (링크는 2026-11-09 조사 때 적은 것입니다.)
 
 ## 자주 겪는 문제
 | 증상 | 원인 | 해결 |
