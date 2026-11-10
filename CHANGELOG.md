@@ -4,6 +4,11 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 uses [Semantic Versioning](https://semver.org/).
 
+## [0.1.4] - 2026-11-10
+
+### Fixed
+- Find quotes written as `fi`/`fl` on PDFs whose text layer stores ligatures (U+FB00..U+FB06, common in LaTeX papers). Page text and quotes now share one compatibility normalisation; Hangul compatibility jamo are left as they are.
+
 ## [0.1.3] - 2026-11-10
 
 ### Changed
