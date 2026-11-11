@@ -11,6 +11,7 @@ from typing import Iterable, Optional, Protocol
 import pdfplumber
 
 from .grounding import ground_finding
+from .i18n import CodedError, t
 from .llm import Client
 from .models import (
     HIGHLIGHTED,
@@ -68,10 +69,7 @@ class JsonProvider:
         """Reject findings that point past the last page instead of dropping them silently."""
         for i, f in enumerate(self._items):
             if f.page > n_pages:
-                raise InputError(
-                    f"item {i}: page {f.page} but the PDF has {n_pages} page(s). "
-                    "Fix the page number in the findings file."
-                )
+                raise InputError("err.item_page", i=i, page=f.page, n_pages=n_pages)
 
     def findings_for(self, page: PageText):
         return self._by_page.get(page.number, []), None
@@ -93,16 +91,17 @@ def run_pipeline(
     author: str = DEFAULT_AUTHOR,
     recall: bool = False,
     on_page_done=None,
+    lang: Optional[str] = None,
 ) -> Report:
     src, dst = Path(src), Path(dst)
     if max_per_page < 1:
-        raise InputError("--max-highlights-per-page must be 1 or more.")
+        raise InputError("err.cap_min")
     reader = open_source(src)
     n_pages = len(reader.pages)
     selected = sorted(set(pages)) if pages else list(range(1, n_pages + 1))
     bad = [p for p in selected if not 1 <= p <= n_pages]
     if bad:
-        raise InputError(f"Page(s) {bad} are outside this PDF (it has {n_pages} pages).")
+        raise InputError("err.pages_outside", pages=bad, n_pages=n_pages)
     if isinstance(provider, JsonProvider):
         provider.check_pages(n_pages)
 
@@ -129,18 +128,18 @@ def run_pipeline(
                 found = ground_finding(get_page, n_pages, f.page, f.quote, used)
                 if found is None:
                     target = min(max(f.page, 1), n_pages)
-                    memo(target, f"[위치 못 찾음] {_short(f.quote)} — {f.comment}")
+                    memo(target, f"{t('tag.not_found', lang)} {_short(f.quote)} — {f.comment}")
                     report.placements.append(Placement(f, MEMO_NOT_FOUND, target))
                     return
                 p, m = found
                 if highlights.get(p, 0) >= max_per_page:
-                    memo(p, f"[상한 초과] {_short(f.quote)} — {f.comment}")
+                    memo(p, f"{t('tag.overflow', lang)} {_short(f.quote)} — {f.comment}")
                     report.placements.append(Placement(f, MEMO_OVERFLOW, p, m.stage))
                     return
                 page = get_page(p)
                 used[p].update(m.indices)
                 rects = line_rects(page.chars, m.indices)
-                contents = f.comment if m.stage != "prefix25" else f"(느슨 일치) {f.comment}"
+                contents = f.comment if m.stage != "prefix25" else f"{t('tag.loose', lang)} {f.comment}"
                 writer.add_highlight(p - 1, quad_points(rects, page.height), contents, f.severity)
                 highlights[p] = highlights.get(p, 0) + 1
                 report.placements.append(Placement(f, HIGHLIGHTED, p, m.stage, len(rects)))
@@ -152,7 +151,9 @@ def run_pipeline(
                     _, result.truncated = page.prompt_text()
                     if provider.skip_blank and not page.has_text_layer:
                         result.status = PAGE_SKIPPED
-                        result.detail = "no usable text layer (blank, scanned or unmapped glyphs); the model was not called"
+                        cause = CodedError("detail.no_text_layer")
+                        result.detail = str(cause)
+                        result.cause = cause  # not a dataclass field: report.json keeps its keys
                     else:
                         findings, review = provider.findings_for(page)
                         if review is not None:
@@ -164,6 +165,7 @@ def run_pipeline(
                             result.prompts = review.prompts
                             result.responses_head = [r[:300] for r in review.responses]
                             result.detail = review.recall_error
+                            result.cause = review.recall_cause
                         for f in findings:
                             place(f)
                 except InputError:
@@ -171,6 +173,7 @@ def run_pipeline(
                 except Exception as exc:  # isolate: only this page fails
                     result.status = PAGE_ERROR
                     result.detail = f"{type(exc).__name__}: {exc}"
+                    result.cause, result.cause_prefix = exc, f"{type(exc).__name__}: "
                 report.pages.append(result)
                 writer.save()  # everything finished so far is safe on disk
                 for key in [k for k in cache if k < p]:

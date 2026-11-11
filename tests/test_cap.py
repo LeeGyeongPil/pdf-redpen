@@ -5,6 +5,7 @@ import json
 
 from conftest import FINDINGS_JSON, PLAIN_PDF, annots_of, count_by_subtype
 from pdf_redpen.cli import main
+from pdf_redpen.i18n import t
 
 
 def test_cap_three_via_cli(tmp_path, capsys):
@@ -13,7 +14,7 @@ def test_cap_three_via_cli(tmp_path, capsys):
     assert code == 0
     assert count_by_subtype(dst, 0) == {"/Highlight": 3, "/Text": 1}
     memo = [a for a in annots_of(dst, 0) if a["/Subtype"] == "/Text"][0]
-    assert str(memo["/Contents"]).count("[상한 초과]") == 3
+    assert str(memo["/Contents"]).count(t("tag.overflow", "en")) == 3
     report = json.loads(dst.with_suffix(".report.json").read_text(encoding="utf-8"))
     assert report["counts"]["memo_overflow"] == 3
     statuses = [f["status"] for f in report["findings"]]

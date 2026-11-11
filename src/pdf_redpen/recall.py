@@ -9,6 +9,7 @@ from __future__ import annotations
 import re
 import unicodedata
 from dataclasses import dataclass, field
+from typing import Optional
 
 from . import prompts
 from .llm import Client, LLMError
@@ -32,6 +33,7 @@ class PageReview:
     prompts: list[str] = field(default_factory=list)
     responses: list[str] = field(default_factory=list)
     recall_error: str = ""
+    recall_cause: Optional[Exception] = None  # the LLMError behind recall_error (for localised output)
 
     @property
     def findings(self) -> list[Finding]:
@@ -65,6 +67,7 @@ def review_page(client: Client, page: PageText, instructions: str, *, recall: bo
         answer2 = client.complete(messages, page=page.number, turn=2)
     except LLMError as exc:  # keep the first-turn findings
         out.recall_error = str(exc)
+        out.recall_cause = exc
         return out
     out.responses.append(answer2)
     parsed2 = parse_table(answer2)

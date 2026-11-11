@@ -4,6 +4,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional
 
+from .i18n import CodedError
+
 # Status values of a placed finding.
 HIGHLIGHTED = "highlighted"
 MEMO_NOT_FOUND = "memo_not_found"
@@ -17,10 +19,11 @@ PAGE_ERROR = "error"
 SEVERITIES = ("high", "medium", "low")
 
 
-class InputError(Exception):
+class InputError(CodedError):
     """The user gave something unusable (bad file, bad JSON, missing model name).
 
-    The message always says how to fix it. The CLI maps this to exit code 2.
+    The message always says how to fix it. The CLI maps this to exit code 2 and shows
+    it in the chosen language (message_id + params); str(exc) is English.
     """
 
 
@@ -111,30 +114,27 @@ def findings_from_json(text: str, origin: str = "findings JSON") -> list[Finding
     try:
         data = json.loads(text)
     except ValueError as exc:
-        raise InputError(f"{origin} is not valid JSON ({exc}). Expected a list of objects.") from exc
+        raise InputError("err.json_invalid", origin=origin, reason=exc) from exc
     if not isinstance(data, list):
-        raise InputError(f"{origin} must be a JSON list of objects with page, quote and comment.")
+        raise InputError("err.json_not_list", origin=origin)
     out: list[Finding] = []
     for i, item in enumerate(data):
         if not isinstance(item, dict):
-            raise InputError(f"{origin}: item {i} is not an object.")
+            raise InputError("err.json_not_object", origin=origin, i=i)
         page, quote, comment = item.get("page"), item.get("quote"), item.get("comment", "")
         if isinstance(page, bool) or not isinstance(page, int) or page < 1:
-            raise InputError(f"{origin}: item {i} needs an integer 'page' >= 1 (got {page!r}).")
+            raise InputError("err.json_page", origin=origin, i=i, page=page)
         if not isinstance(quote, str) or not quote.strip():
-            raise InputError(f"{origin}: item {i} needs a non-empty string 'quote'.")
+            raise InputError("err.json_quote", origin=origin, i=i)
         if not isinstance(comment, str):
-            raise InputError(f"{origin}: item {i}: 'comment' must be a string.")
+            raise InputError("err.json_comment", origin=origin, i=i)
         severity = item.get("severity")
         if severity is not None:
             from .table import normalize_severity
 
             normalized = normalize_severity(str(severity))
             if normalized is None:
-                raise InputError(
-                    f"{origin}: item {i}: unknown severity {severity!r}; use high, medium or low "
-                    "(or omit 'severity')."
-                )
+                raise InputError("err.json_severity", origin=origin, i=i, severity=severity)
             severity = normalized
         out.append(Finding(page, quote, comment, severity, "apply"))
     return out

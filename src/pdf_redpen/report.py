@@ -5,37 +5,56 @@ import json
 from dataclasses import asdict
 from pathlib import Path
 
-from .models import HIGHLIGHTED, MEMO_NOT_FOUND, MEMO_OVERFLOW, Report
+from typing import Optional
 
-MOCK_NOTICE = (
-    "Practice mock mode: the answers were replayed from recorded files written by hand, "
-    "not produced by a real model. Everything after the answer (table parsing, merging, "
-    "grounding, annotation) is the same code as in real mode."
-)
+from .i18n import CodedError, t, t_plural
+from .models import HIGHLIGHTED, MEMO_NOT_FOUND, MEMO_OVERFLOW, PageResult, Report
+
+def mock_notice(lang: Optional[str] = None) -> str:
+    """The honest 'practice mock' label, in the chosen language."""
+    return t("notice.mock", lang)
 
 
-def summary_line(r: Report) -> str:
+_MODE_KEYS = {"apply": "mode.apply", "review": "mode.review",
+              "review (mock: practice replay)": "mode.review_mock"}
+
+
+def mode_label(mode: str, lang: Optional[str] = None) -> str:
+    """Screen label for report.json's mode value (the JSON itself stays untouched)."""
+    key = _MODE_KEYS.get(mode)
+    return t(key, lang) if key else mode
+
+
+def summary_line(r: Report, lang: Optional[str] = None) -> str:
     memos = r.count(MEMO_NOT_FOUND) + r.count(MEMO_OVERFLOW)
-    skipped = r.skipped_pages
     parts = [
-        f"{r.count(HIGHLIGHTED)} highlighted",
-        f"{memos} page memo{'' if memos == 1 else 's'}",
-        f"{skipped} page{'' if skipped == 1 else 's'} skipped (no text layer)",
+        t("summary.highlighted", lang, n=r.count(HIGHLIGHTED)),
+        t_plural("summary.memos", memos, lang),
+        t_plural("summary.skipped", r.skipped_pages, lang),
     ]
     if r.error_pages:
-        parts.append(f"{r.error_pages} page{'' if r.error_pages == 1 else 's'} failed")
-    return f"{len(r.placements)} findings: " + ", ".join(parts)
+        parts.append(t_plural("summary.failed", r.error_pages, lang))
+    return t("summary.line", lang, total=len(r.placements), parts=t("summary.sep", lang).join(parts))
 
 
-def stage_line(r: Report) -> str:
-    return "stages: " + " ".join(f"{k}={v}" for k, v in r.stage_counts().items())
+def stage_line(r: Report, lang: Optional[str] = None) -> str:
+    return t("summary.stages", lang, stages=" ".join(f"{k}={v}" for k, v in r.stage_counts().items()))
 
 
-def recall_line(r: Report) -> str:
+def recall_line(r: Report, lang: Optional[str] = None) -> str:
     first = sum(p.first_pass for p in r.pages)
     added = sum(p.recall_added for p in r.pages)
     dup = sum(p.recall_deduped for p in r.pages)
-    return f"recall pass: first {first}, added {added}, duplicates dropped {dup}"
+    return t("summary.recall", lang, first=first, added=added, dup=dup)
+
+
+def page_detail(p: PageResult, lang: Optional[str] = None) -> str:
+    """The page's detail text in the chosen language (falls back to the stored English text)."""
+    cause = getattr(p, "cause", None)
+    if cause is None:
+        return p.detail
+    text = cause.render(lang) if isinstance(cause, CodedError) else str(cause)
+    return getattr(p, "cause_prefix", "") + text
 
 
 def _counts(r: Report) -> dict:
@@ -60,7 +79,7 @@ def to_dict(r: Report) -> dict:
         "mode": r.mode,
         "max_highlights_per_page": r.max_per_page,
         "recall_pass": r.recall_pass,
-        "summary": summary_line(r),
+        "summary": summary_line(r, "en"),  # machine output: always English
         "counts": _counts(r),
         "stage_counts": r.stage_counts(),
         "pages": [asdict(p) for p in r.pages],
@@ -85,26 +104,26 @@ def _cell(text: object) -> str:
     return str(text).replace("|", "\\|").replace("\n", " ")
 
 
-def to_markdown(r: Report) -> str:
+def to_markdown(r: Report, lang: Optional[str] = None) -> str:
     c = _counts(r)
     lines = [
-        f"# pdf-redpen report: {Path(r.source).name}",
+        f"# {t('md.title', lang, name=Path(r.source).name)}",
         "",
-        f"- mode: {r.mode}",
-        f"- result: **{summary_line(r)}**",
-        f"- {stage_line(r)}",
+        f"- {t('md.mode', lang, mode=mode_label(r.mode, lang))}",
+        f"- {t('md.result', lang, summary=summary_line(r, lang))}",
+        f"- {stage_line(r, lang)}",
     ]
     if r.recall_pass:
-        lines.append(f"- {recall_line(r)}")
+        lines.append(f"- {recall_line(r, lang)}")
     if c["broken_rows"]:
-        lines.append(f"- broken table rows skipped: {c['broken_rows']}")
+        lines.append(f"- {t('md.broken_rows', lang, n=c['broken_rows'])}")
     if "mock" in r.mode:
-        lines += ["", f"> {MOCK_NOTICE}"]
+        lines += ["", f"> {mock_notice(lang)}"]
     lines += [
         "",
-        "## Findings",
+        f"## {t('md.findings', lang)}",
         "",
-        "| # | source | asked page | found page | stage | status | severity | quote | comment |",
+        t("md.findings_head", lang),
         "|---|---|---|---|---|---|---|---|---|",
     ]
     for i, p in enumerate(r.placements, 1):
@@ -114,32 +133,30 @@ def to_markdown(r: Report) -> str:
             f"{f.severity or '-'} | {_cell(f.quote)} | {_cell(f.comment)} |"
         )
     if any(p.stage == "prefix25" for p in r.placements):
-        lines += ["", "Note: `prefix25` matches only the first 25 characters of the quote and paints "
-                      "up to the quote's length, so it may cover text the model never quoted. "
-                      "Check these highlights by eye."]
-    lines += ["", "## Pages", "", "| page | status | first | recall added | duplicates dropped | broken rows | note |",
+        lines += ["", t("md.prefix25_note", lang)]
+    lines += ["", f"## {t('md.pages', lang)}", "", t("md.pages_head", lang),
               "|---|---|---|---|---|---|---|"]
     for p in r.pages:
-        note = p.detail or ("no table in answer" if p.no_table else "")
+        note = page_detail(p, lang) or (t("md.no_table", lang) if p.no_table else "")
         if p.truncated:
-            note = (note + " page text truncated before sending").strip()
+            note = (note + " " + t("md.truncated", lang)).strip()
         lines.append(f"| {p.page} | {p.status} | {p.first_pass} | {p.recall_added} | "
                      f"{p.recall_deduped} | {p.broken_rows} | {_cell(note)} |")
     prompted = [p for p in r.pages if p.prompts]
     if prompted:
-        lines += ["", "## Prompts sent", ""]
+        lines += ["", f"## {t('md.prompts', lang)}", ""]
         for p in prompted:
             for turn, text in enumerate(p.prompts, 1):
                 head = text if turn > 1 else text[:400] + (" …" if len(text) > 400 else "")
-                lines += [f"### page {p.page}, turn {turn}", "", "```text", head, "```", ""]
+                lines += [f"### {t('md.prompt_head', lang, page=p.page, turn=turn)}", "", "```text", head, "```", ""]
     return "\n".join(lines) + "\n"
 
 
-def write_reports(r: Report, dst: Path) -> tuple[Path, Path]:
-    """Write <out>.report.json and <out>.report.md next to the output PDF."""
+def write_reports(r: Report, dst: Path, lang: Optional[str] = None) -> tuple[Path, Path]:
+    """Write <out>.report.json (always English, for machines) and <out>.report.md (in `lang`)."""
     dst = Path(dst)
     json_path = dst.with_suffix(".report.json")
     md_path = dst.with_suffix(".report.md")
     json_path.write_text(json.dumps(to_dict(r), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    md_path.write_text(to_markdown(r), encoding="utf-8")
+    md_path.write_text(to_markdown(r, lang), encoding="utf-8")
     return json_path, md_path

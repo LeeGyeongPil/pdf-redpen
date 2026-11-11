@@ -6,6 +6,7 @@ from pypdf import PdfReader
 
 from conftest import FINDINGS_JSON, PLAIN_PDF
 from pdf_redpen import annotate_pdf
+from pdf_redpen.i18n import t
 from pdf_redpen.models import HIGHLIGHTED, findings_from_json
 from pdf_redpen.recall import quote_key
 
@@ -40,7 +41,7 @@ def test_reread_two_readers(tmp_path, sample_pdf):
                         cx, cy = (c["x0"] + c["x1"]) / 2, (c["top"] + c["bottom"]) / 2
                         if x0 <= cx <= x1 and top <= cy <= bottom:
                             under.append(c["text"])
-                placement = by_comment[str(a["/Contents"]).removeprefix("(느슨 일치) ")]
+                placement = by_comment[str(a["/Contents"]).removeprefix(t("tag.loose", "en") + " ")]
                 assert placement.status == HIGHLIGHTED
                 if placement.stage == "prefix25":
                     continue  # loose match: painted text is longer than the quote on purpose

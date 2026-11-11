@@ -13,7 +13,7 @@ from .grounding import ground
 from .models import Finding, InputError, Match, Report
 from .writer import DEFAULT_AUTHOR
 
-__version__ = "0.1.4"
+__version__ = "0.2.0"
 __all__ = ["Finding", "Match", "Report", "InputError", "ground", "annotate_pdf", "__version__"]
 
 
@@ -24,14 +24,17 @@ def annotate_pdf(
     *,
     max_per_page: int = 20,
     author: str = DEFAULT_AUTHOR,
+    lang: "str | None" = None,
 ) -> Report:
     """Highlight each finding's quote in `src` and save the result to `dst`.
 
-    No model is called. Quotes that cannot be found become one memo per page.
+    No model is called. Quotes that cannot be found become one memo per page. The memo tags
+    ("[not found]", "[over cap]", "(loose match)") follow `lang` ("en" or "ko"); by default the
+    language set with `pdf_redpen.i18n.set_lang` (English unless changed).
     """
     from .pipeline import JsonProvider, run_pipeline
 
     return run_pipeline(
         Path(src), Path(dst), JsonProvider(findings), mode="apply",
-        max_per_page=max_per_page, author=author,
+        max_per_page=max_per_page, author=author, lang=lang,
     )

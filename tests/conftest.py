@@ -73,3 +73,16 @@ def add_human_annotation(src: Path, dst: Path, author: str = "Alice") -> Path:
 @pytest.fixture
 def findings_json() -> list[dict]:
     return json.loads(FINDINGS_JSON.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(autouse=True)
+def _fixed_language(monkeypatch):
+    """Tests assert English text: pin the screen language and ignore the machine's locale."""
+    from pdf_redpen import i18n
+
+    for name in ("LC_ALL", "LC_MESSAGES", "LANG"):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setenv("PDF_REDPEN_LANG", "en")
+    previous = i18n.set_lang("en")
+    yield
+    i18n.set_lang(previous)

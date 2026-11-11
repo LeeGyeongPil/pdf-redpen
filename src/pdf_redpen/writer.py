@@ -47,19 +47,16 @@ def _num_array(values) -> ArrayObject:
 def open_source(path: Path) -> PdfReader:
     """Open a PDF for writing, with errors that say what to do."""
     if not path.is_file():
-        raise InputError(f"PDF not found: {path}. Check the path.")
+        raise InputError("err.pdf_not_found", path=path)
     try:
         reader = PdfReader(str(path))
         if reader.is_encrypted and not reader.decrypt(""):
-            raise InputError(
-                f"{path} is password protected. Remove the password first "
-                "(for example with qpdf --decrypt) and run again."
-            )
+            raise InputError("err.pdf_encrypted", path=path)
         len(reader.pages)  # force a parse so broken files fail here
     except InputError:
         raise
     except Exception as exc:  # pypdf raises many types for broken files
-        raise InputError(f"{path} could not be read as a PDF ({exc}). Is the file damaged?") from exc
+        raise InputError("err.pdf_unreadable", path=path, reason=exc) from exc
     return reader
 
 
