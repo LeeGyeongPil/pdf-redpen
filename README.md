@@ -1,5 +1,7 @@
 # pdf-redpen
 
+**한국어** | [English](README.en.md)
+
 > **English summary** — pdf-redpen takes the sentences an LLM quoted while reviewing a PDF and finds them in the original file, even when the model changed spaces, punctuation or the page number. It then draws standard highlight + note annotations that open in any PDF viewer. Try it with no API key: `uv tool install git+https://github.com/LeeGyeongPil/pdf-redpen && pdf-redpen demo --out out` (the demo replays hand-written recorded answers, a practice mock). MIT license.
 
 LLM 검토 결과의 "3쪽 어딘가의 이 문장" 메모를, 원본 PDF의 **그 자리에 형광펜과 포스트잇**으로 달아 주는 CLI입니다.
