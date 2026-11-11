@@ -34,21 +34,21 @@ uv tool install git+https://github.com/LeeGyeongPil/pdf-redpen
 pdf-redpen demo --out out
 ```
 
-![터미널 출력: 9 findings: 8 highlighted, 1 page memo, 1 page skipped](docs/images/02-demo-run.png)
-*`demo` 실행 화면. 3쪽은 글자 층이 없는 쪽이라 모델을 부르지 않고 건너뜁니다.*
+![터미널 출력(한국어 화면): 지적 9건: 강조 8개, 페이지 메모 1개, 1쪽 건너뜀](docs/images/02-demo-run.ko.png)
+*`demo` 실행 화면(한국어 화면. 언어를 분명히 하려고 스크린샷에는 `--lang ko`를 붙였습니다). 3쪽은 글자 층이 없는 쪽이라 모델을 부르지 않고 건너뜁니다.*
 
-> **연습용 목(mock) 모드입니다.** 모델 응답을 저장소에 들어 있는 녹화 파일(`src/pdf_redpen/data/recorded/`, **사람이 손으로 쓴 것이며 특정 모델의 실제 출력이 아닙니다**)로 대신합니다. 응답을 받은 뒤의 일(표 파싱·보강 병합·위치 찾기·주석 쓰기)은 실제 모드와 **같은 코드**입니다. 실제 모델은 더 많거나 적게, 다르게 지적합니다. 실제 모드는 모델 호출 때문에 훨씬 느릴 수 있습니다.
+> **연습용 목(mock) 모드입니다.** 모델 응답을 저장소에 들어 있는 녹음 파일(`src/pdf_redpen/data/recorded/`, **사람이 손으로 쓴 것이며 특정 모델의 실제 출력이 아닙니다**)로 대신합니다. 응답을 받은 뒤의 일(표 파싱·보강 병합·위치 찾기·주석 쓰기)은 실제 모드와 **같은 코드**입니다. 실제 모델은 더 많거나 적게, 다르게 지적합니다. 실제 모드는 모델 호출 때문에 훨씬 느릴 수 있습니다.
 
 읽는 법:
 
 | 출력 | 뜻 |
 |---|---|
-| `9 findings` | 모델(녹화)이 낸 지적 9건 |
-| `8 highlighted` | 8건은 PDF에서 위치를 찾아 형광펜을 그림 |
-| `1 page memo` | 1건은 본문에서 못 찾아 그 쪽 모서리 메모에 적음 |
-| `1 page skipped` | 글자 층이 없는 쪽(스캔·빈 쪽)은 건너뜀 |
-| `stages: exact=4 ...` | 지적을 어느 단계의 일치 방식으로 찾았는지의 집계 |
-| `recall pass: first 8, added 1, ...` | 1차 8건, "놓친 것만" 다시 물어 1건 추가, 중복 1건 제거 |
+| `지적 9건` | 모델(녹음)이 낸 지적 9건 |
+| `강조 8개` | 8건은 PDF에서 위치를 찾아 형광펜을 그림 |
+| `페이지 메모 1개` | 1건은 본문에서 못 찾아 그 쪽 모서리 메모에 적음 |
+| `1쪽 건너뜀(텍스트 층 없음)` | 글자 층이 없는 쪽(스캔·빈 쪽)은 건너뜀 |
+| `단계: exact=4 ...` | 지적을 어느 단계의 일치 방식으로 찾았는지의 집계 |
+| `재확인 패스: 첫 번째 8, 추가 1, ...` | 1차 8건, "놓친 것만" 다시 물어 1건 추가, 중복 1건 제거 |
 
 `out/reviewed.pdf`를 아무 PDF 뷰어로 열어 보세요. 찾은 지적은 형광펜(`/Highlight`)이 되고 설명은 형광펜의 메모(`/Contents`)에 들어 있어, 형광펜을 클릭하거나 올리면 보입니다. 못 찾은 지적은 쪽 모서리의 메모 아이콘 하나에 `[위치 못 찾음]`으로 모입니다.
 
@@ -56,16 +56,33 @@ pdf-redpen demo --out out
 
 | 명령 | 하는 일 | 예 |
 |---|---|---|
-| `demo` | 번들 샘플 3쪽을 녹화 응답으로 검토 | `pdf-redpen demo --out out` |
+| `demo` | 번들 샘플 3쪽을 녹음 응답으로 검토 | `pdf-redpen demo --out out` |
 | `review` | PDF를 모델로 검토해 주석 PDF·리포트 생성 | `pdf-redpen review a.pdf --recall-pass -o a.reviewed.pdf` |
 | `apply` | 모델 없이, 지적 JSON을 PDF에 달기 | `pdf-redpen apply a.pdf findings.json -o a.marked.pdf` |
 | `clear` | 이 도구가 단 주석만 제거 | `pdf-redpen clear a.marked.pdf -o a.clean.pdf` |
 
-`review` 옵션: `--instructions FILE`(검토 지침), `--mock DIR`(녹화 재생), `--record DIR`(응답 저장), `--recall-pass`(놓친 것 재질의), `--max-highlights-per-page N`(기본 20), `--pages 1-3,5`, `--author`, `--lang ko|en`(프롬프트 언어).
+`review` 옵션: `--instructions FILE`(검토 지침), `--mock DIR`(녹음 재생), `--record DIR`(응답 저장), `--recall-pass`(놓친 것 재질의), `--max-highlights-per-page N`(기본 20), `--pages 1-3,5`, `--author`, `--lang ko|en`(모델에 보내는 **프롬프트** 언어, 기본 `ko`. 화면 언어가 아닙니다. 아래 참고).
 종료 코드:
-- `0` 정상. 지적을 못 찾았어도 0이고(리포트로 알림), 일부 쪽만 실패하면 `warning: N page(s) failed ...`를 stderr에 내고 0입니다.
-- `1` 모델에 보낸 쪽이 **전부** 실패(`error: every page failed; ...`)했거나 예기치 못한 오류.
-- `2` 입력 오류(없는 파일, 잘못된 JSON, 범위 밖 `page`, 알 수 없는 `severity`, 모델 미설정 등).
+- `0` 정상. 지적을 못 찾았어도 0이고(리포트로 알림), 일부 쪽만 실패하면 `경고: N개 쪽이 실패했습니다. ...`(영어 화면에서는 `warning: N page(s) failed ...`)를 stderr에 내고 0입니다.
+- `1` 모델에 보낸 쪽이 **전부** 실패(`오류: 모든 쪽이 실패했습니다. ...`, 영어 화면에서는 `error: every page failed; ...`)했거나 예기치 못한 오류.
+- `2` 입력 오류(없는 파일, 잘못된 JSON, 범위 밖 `page`, 알 수 없는 `severity`, 모델 미설정 등) 또는 읽거나 쓸 수 없는 파일(`오류: <경로> 에 접근할 수 없습니다: ...`, 예: 읽기 전용 출력 폴더).
+
+### 화면 언어 (영어 / 한국어)
+터미널에 나오는 모든 것(도움말, 진행·요약 줄, 오류 메시지)과 Markdown 리포트를 영어 또는 한국어로 볼 수 있습니다. PDF 안에 쓰는 메모도 같은 언어를 따릅니다. 먼저 정해진 것이 이깁니다.
+
+| 우선순위 | 방법 | 예 |
+|---|---|---|
+| 1 | 전역 옵션, 명령 **앞**에 둠 | `pdf-redpen --lang ko demo --out out` |
+| 2 | 환경변수 | `PDF_REDPEN_LANG=ko pdf-redpen demo --out out` |
+| 3 | 로캘: `LC_ALL` → `LC_MESSAGES` → `LANG`(값이 `ko`로 시작하면 한국어) | `LANG=ko_KR.UTF-8 pdf-redpen demo --out out` |
+| 4 | 아무것도 없거나 그 밖의 값 | 영어 |
+
+![한국어 도움말 화면: 사용법, 명령 네 가지, --lang 옵션](docs/images/09-lang-help.ko.png)
+*`pdf-redpen --lang ko --help`(한국어 화면). `--lang en`이면 같은 화면이 영어로 나옵니다. argparse가 붙이는 제목(`usage:`, `positional arguments:`, `options:`)과 `-h`·`--version`의 설명 줄은 영어 그대로입니다.*
+
+- **명령 앞의 `--lang`은 화면 언어이고, `review` 뒤의 `review --lang ko|en`은 모델에 보내는 프롬프트 언어**입니다(기본값 `ko` 그대로). 서로 별개라서 `pdf-redpen --lang ko review a.pdf --lang en`은 화면은 한국어, 모델에는 영어로 묻습니다.
+- PDF 안의 메모는 한국어에서 `[위치 못 찾음]`, `[상한 초과]`, `(느슨 일치)`, 영어에서 `[not found]`, `[over cap]`, `(loose match)`입니다. 0.2.0 이전 버전은 항상 한국어 태그를 썼습니다.
+- `report.json`은 기계용이라 언어와 상관없이 항상 영어입니다. 상태·단계 코드(`highlighted`, `exact` 등)도 두 언어가 같습니다.
 
 ### 시나리오 1. 내 문서를 로컬 모델로 검토
 ```bash
@@ -74,20 +91,20 @@ export PDF_REDPEN_MODEL=<받아 둔 모델 이름>
 pdf-redpen review report.pdf --instructions review.md --recall-pass --record rec -o report.reviewed.pdf
 ```
 - 쪽마다 글자를 뽑아 모델에 보내고, 응답의 표에서 인용문을 골라 위치를 찾습니다.
-- `--record rec`를 붙이면 응답이 `rec/page{n}_turn{k}.md`에 저장되어, 나중에 `--mock rec`로 키·네트워크 없이 같은 결과를 다시 만들 수 있습니다(팀 공유·회귀 확인). 직접 녹화한 파일을 재생하면 리포트의 "연습용 목" 안내 문구가 그대로 붙지만, 내용은 사람이 쓴 것이 아니라 그 모델의 응답입니다. `--mock`과 `--record`는 한 번에 같이 쓸 수 없습니다(둘 다 주면 종료 코드 2).
+- `--record rec`를 붙이면 응답이 `rec/page{n}_turn{k}.md`에 저장되어, 나중에 `--mock rec`로 키·네트워크 없이 같은 결과를 다시 만들 수 있습니다(팀 공유·회귀 확인). 직접 녹음한 파일을 재생하면 리포트의 "연습용 목" 안내 문구가 그대로 붙지만, 내용은 사람이 쓴 것이 아니라 그 모델의 응답입니다. `--mock`과 `--record`는 한 번에 같이 쓸 수 없습니다(둘 다 주면 종료 코드 2).
 - 이 모드는 **페이지 글자를 지정한 엔드포인트로 보냅니다.** 민감한 문서는 로컬 모델을 쓰세요.
 
-엔드포인트가 안 떠 있거나 모델 이름이 틀리면 쪽마다 원인이 터미널에 함께 나옵니다. 보낸 쪽이 전부 실패하면 종료 코드 1입니다.
+엔드포인트가 안 떠 있거나 모델 이름이 틀리면 쪽마다 원인이 터미널에 함께 나옵니다. 보낸 쪽이 전부 실패하면 종료 코드 1입니다. (아래 예시는 `PDF_REDPEN_TIMEOUT=2`, `PDF_REDPEN_BASE_URL=http://127.0.0.1:9/v1` 로 만든 것이며 기본값이면 `현재 120초`로 나옵니다.)
 ```text
-  page 1: error - LLMError: Could not reach http://127.0.0.1:9/v1/chat/completions (<urlopen error [Errno 61] Connection refused>). Is the server running? Local models can be slow; raise PDF_REDPEN_TIMEOUT (now 2s).
+  1쪽: error - LLMError: http://127.0.0.1:9/v1/chat/completions 에 연결할 수 없습니다(<urlopen error [Errno 61] Connection refused>). 서버가 실행 중인가요? 로컬 모델은 느릴 수 있으니 PDF_REDPEN_TIMEOUT 을 늘려 보세요(현재 2초).
   ...
-error: every page failed; see the causes above (or the Pages table in the report). Nothing was reviewed.
+오류: 모든 쪽이 실패했습니다. 위의 원인(또는 보고서의 쪽 표)을 확인하세요. 검토된 것이 없습니다.
 ```
 
 모델을 지정하지 않으면 이렇게 멈춥니다(종료 코드 2).
 
-![모델 미설정 시 오류 메시지와 exit code 2](docs/images/07-no-model.png)
-*의도적으로 보여 주는 오류 화면. `PDF_REDPEN_MODEL`을 설정하거나 `demo`·`--mock`을 쓰라고 안내합니다.*
+![모델 미설정 시 오류 메시지와 exit code 2(한국어 화면)](docs/images/07-no-model.ko.png)
+*의도적으로 보여 주는 오류 화면(한국어 화면). `PDF_REDPEN_MODEL`을 설정하거나 `demo`·`--mock`을 쓰라고 안내합니다.*
 
 ### 시나리오 2. 다른 도구의 지적을 PDF에 달기 (`apply`)
 `findings.json`은 이런 배열입니다(전체 예: [`examples/findings.json`](examples/findings.json)).
@@ -101,10 +118,10 @@ error: every page failed; see the causes above (or the Pages table in the report
 
 `page`가 PDF 쪽 수를 넘으면 지적이 사라지지 않도록 **종료 코드 2로 멈추고 출력 PDF를 만들지 않습니다.**
 
-![범위 밖 page 오류: item 0: page 99 but the PDF has 3 page(s), exit code 2](docs/images/08-page-out-of-range.png)
-*의도적으로 보여 주는 오류 화면. 항목 번호(0부터)와 PDF의 쪽 수를 알려 줍니다.*
+![범위 밖 page 오류: 0번 항목: 99쪽이지만 PDF는 3쪽까지 있습니다, exit code 2(한국어 화면)](docs/images/08-page-out-of-range.ko.png)
+*의도적으로 보여 주는 오류 화면(한국어 화면). 항목 번호(0부터)와 PDF의 쪽 수를 알려 줍니다.*
 
-알 수 없는 `severity`는 `error: f.json: item 0: unknown severity 'urgnt'; use high, medium or low (or omit 'severity').`(종료 코드 2)로 거부됩니다.
+알 수 없는 `severity`는 `오류: f.json: 0번 항목: 알 수 없는 severity 'urgnt'. high, medium, low 중 하나를 쓰거나 'severity' 를 생략하세요.`(종료 코드 2)로 거부됩니다.
 
 ### 시나리오 3. 지적이 너무 많은 쪽, 그리고 지우고 다시 하기
 이 명령의 경로(`src/...`, `examples/findings.json`)는 저장소를 클론한 폴더에서 실행한다고 가정합니다. `pip`/`uv tool`로만 설치했다면 자기 PDF·JSON 경로로 바꿔 쓰세요.
@@ -114,37 +131,37 @@ pdf-redpen apply src/pdf_redpen/data/sample_report.pdf examples/findings.json -o
 pdf-redpen clear cap3.pdf -o clean.pdf
 ```
 
-![apply 결과 집계와 clear가 8개 주석을 지운 출력](docs/images/06-apply-clear.png)
+![apply 결과 집계와 clear가 8개 주석을 지운 출력(한국어 화면)](docs/images/06-apply-clear.ko.png)
 *한 쪽에 형광펜은 3개까지만 그리고, 나머지는 쪽 메모로 모읍니다. `clear`는 작성자가 `pdf-redpen`인 주석 8개(형광펜 6개 + 쪽마다 하나인 쪽 메모 2개)만 지웁니다.*
 
 ![상한 3 적용 후 1쪽: 형광펜 3개와 오른쪽 위 쪽 메모 아이콘](docs/images/05-cap3-page1.png)
-*상한을 넘은 지적은 오른쪽 위 노란 메모 아이콘 하나에 `[상한 초과]` 목록으로 모입니다.*
+*상한을 넘은 지적은 오른쪽 위 노란 메모 아이콘 하나에 `[상한 초과]` 목록으로 모입니다(영어 화면에서는 `[over cap]`).*
 
 `clear`는 `/T`(작성자)가 `pdf-redpen`인 주석만 지우므로, 사람이 단 주석은 남습니다. `review --author 이름`으로 작성자를 바꿔 달았다면 지울 때도 `pdf-redpen clear a.pdf -o b.pdf --author 이름`을 줘야 합니다. `apply`도 `review`처럼 출력 PDF 옆에 `<이름>.report.json`·`<이름>.report.md`를 만듭니다.
 
 ## 리포트 읽는 법
 `review`·`demo`는 출력 PDF 옆에 `<이름>.report.json`(기계용)과 `<이름>.report.md`(사람용)를 함께 만듭니다(예: `out/reviewed.report.md`). 터미널에 안 보이는 세부는 여기에 있습니다.
 
-![리포트의 지적 표: 지적마다 요청 쪽, 찾은 쪽, 일치 단계](docs/images/03-report-table.png)
-*`reviewed.report.md`의 Findings 표 일부(열 `#`, `asked page`, `found page`, `stage`, `quote`만 잘라 보임). 8번 지적은 2쪽이라 했지만 1쪽에서 찾았고, 9번은 `-`(못 찾음)이라 쪽 메모로 갔습니다.*
+![리포트의 지적 표(한국어): 지적마다 요청 쪽, 찾은 쪽, 일치 단계](docs/images/03-report-table.ko.png)
+*한국어 `reviewed.report.md`의 지적 사항 표 일부(열 `#`, `요청 쪽`, `찾은 쪽`, `단계`, `인용문`만 잘라 보임). 8번 지적은 2쪽이라 했지만 1쪽에서 찾았고, 9번은 `-`(못 찾음)이라 쪽 메모로 갔습니다.*
 
-**Findings 표 열**: `#` 번호 / `source`(`turn1`=1차 질의, `recall`=보강 질의, `apply`=JSON 입력) / `asked page`(모델이 말한 쪽) / `found page`(실제로 찾은 쪽) / `stage`(어느 일치 단계, 못 찾으면 `-`) / `status` / `severity` / `quote` / `comment`.
+**지적 사항 표 열**(영어 리포트의 `Findings` 표): `#` 번호 / `출처`(`turn1`=1차 질의, `recall`=보강 질의, `apply`=JSON 입력) / `요청 쪽`(모델이 말한 쪽) / `찾은 쪽`(실제로 찾은 쪽) / `단계`(어느 일치 단계, 못 찾으면 `-`) / `상태` / `심각도` / `인용문` / `코멘트`.
 
-| 지적 `status` | 뜻 | PDF에서 보이는 모습 |
+| 지적 `상태` | 뜻 | PDF에서 보이는 모습 |
 |---|---|---|
 | `highlighted` | 위치를 찾아 칠함 | 형광펜 + 메모 |
-| `memo_not_found` | 본문에서 못 찾음 | 쪽 모서리 메모에 `[위치 못 찾음]` 목록 |
-| `memo_overflow` | 쪽당 형광펜 상한(`--max-highlights-per-page`) 초과 | 쪽 모서리 메모에 `[상한 초과]` 목록 |
+| `memo_not_found` | 본문에서 못 찾음 | 쪽 모서리 메모에 `[위치 못 찾음]` 목록(영어 화면에서는 `[not found]`) |
+| `memo_overflow` | 쪽당 형광펜 상한(`--max-highlights-per-page`) 초과 | 쪽 모서리 메모에 `[상한 초과]` 목록(영어 화면에서는 `[over cap]`) |
 
-**Pages 표**: 쪽마다 `status`와 `first`(1차 지적 수)·`recall added`·`duplicates dropped`·`broken rows`, 그리고 `note`가 있습니다.
+**쪽 표**(영어 리포트의 `Pages` 표): 쪽마다 `상태`와 `첫 번째`(1차 지적 수)·`재확인 추가`·`중복 제외`·`깨진 행`, 그리고 `비고`가 있습니다.
 
-| 쪽 `status` | 뜻 |
+| 쪽 `상태` | 뜻 |
 |---|---|
 | `ok` | 모델을 불러 처리함 |
 | `skipped_no_text_layer` | 글자 층이 없어 모델을 부르지 않음(`note`에 이유) |
-| `error` | 그 쪽의 호출이 실패함. `note`에 원인(예: `Could not reach ...`)이 남고, 같은 원인이 터미널에도 나옵니다 |
+| `error` | 그 쪽의 호출이 실패함. `비고`에 원인(예: `Could not reach ...`, 한국어 화면에서는 한국어 문구)이 남고, 같은 원인이 터미널에도 나옵니다 |
 
-`note`에 `page text truncated before sending`이 있으면 그 쪽 글자가 한 쪽당 12000자에서 잘려 모델에 간 것이니, 뒷부분의 지적은 빠졌을 수 있습니다. 또 `stage`가 `prefix25`인 지적은 인용보다 길게 칠했을 수 있으니(아래 5단계 설명) 눈으로 확인하세요.
+`비고`에 `page text truncated before sending`(한국어 화면에서는 한국어 문구)이 있으면 그 쪽 글자가 한 쪽당 12000자에서 잘려 모델에 간 것이니, 뒷부분의 지적은 빠졌을 수 있습니다. 또 `stage`가 `prefix25`인 지적은 인용보다 길게 칠했을 수 있으니(아래 5단계 설명) 눈으로 확인하세요.
 
 ## 설정
 환경변수(실제 `review`에서만 필요. `demo`·`apply`·`clear`·`review --mock`은 필요 없음). 예시는 [`.env.example`](.env.example).
@@ -153,8 +170,9 @@ pdf-redpen clear cap3.pdf -o clean.pdf
 |---|---|---|
 | `PDF_REDPEN_BASE_URL` | `http://localhost:11434/v1` | OpenAI 호환 `chat/completions` 엔드포인트의 앞부분 |
 | `PDF_REDPEN_MODEL` | (없음, 필수) | 모델 이름 |
-| `PDF_REDPEN_API_KEY` | (없음) | 있으면 `Authorization: Bearer` 로 보냄. 코드·리포트·녹화 파일에는 기록하지 않음 |
+| `PDF_REDPEN_API_KEY` | (없음) | 있으면 `Authorization: Bearer` 로 보냄. 코드·리포트·녹음 파일에는 기록하지 않음 |
 | `PDF_REDPEN_TIMEOUT` | `120` | 응답 대기 초 |
+| `PDF_REDPEN_LANG` | (없음) | 화면 언어 `en` 또는 `ko`. 전역 `--lang` 옵션이 이보다 우선합니다. `demo`·`apply` 등 모든 명령에 적용 |
 
 ## 동작 원리
 핵심은 두 가지, **위치 찾기(grounding)** 와 **보강 질의(recall pass)** 입니다.
@@ -196,10 +214,10 @@ flowchart LR
 표 열의 뜻은 위의 "리포트 읽는 법"을 보세요.
 
 ### 재현율 보강 턴(recall pass)이 왜 필요한가
-**재현율(recall)** 은 "실제로 있는 문제 중 모델이 찾아낸 비율"입니다. 같은 문서를 같은 모델에 두 번 시키면 지적 수가 달라질 만큼, 한 번의 질의로는 재현율이 낮을 수 있습니다. **재현율 보강 턴**은 이를 높이려고, 같은 대화에 1차 답을 모델(assistant) 메시지로 남긴 채 사용자 메시지에 1차 지적 목록을 다시 보여 주며 **놓친 것만** 추가로 묻는 한 번 더의 질의입니다(구현: `prompts.recall_turn`). 리포트에는 1차 건수와 추가·중복 제거 건수가 따로 적힙니다. 이 기법이 지적 수를 **보장하지는 않으며**, 데모의 `added 1` 같은 수치는 손으로 쓴 녹화값입니다. 아래는 데모가 실제로 보낸 보강 프롬프트입니다.
+**재현율(recall)** 은 "실제로 있는 문제 중 모델이 찾아낸 비율"입니다. 같은 문서를 같은 모델에 두 번 시키면 지적 수가 달라질 만큼, 한 번의 질의로는 재현율이 낮을 수 있습니다. **재현율 보강 턴**은 이를 높이려고, 같은 대화에 1차 답을 모델(assistant) 메시지로 남긴 채 사용자 메시지에 1차 지적 목록을 다시 보여 주며 **놓친 것만** 추가로 묻는 한 번 더의 질의입니다(구현: `prompts.recall_turn`). 리포트에는 1차 건수와 추가·중복 제거 건수가 따로 적힙니다. 이 기법이 지적 수를 **보장하지는 않으며**, 데모의 `added 1` 같은 수치는 손으로 쓴 녹음값입니다. 아래는 데모가 실제로 보낸 보강 프롬프트입니다.
 
-![리포트에 기록된 보강 프롬프트와 recall pass 집계](docs/images/04-recall-prompt.png)
-*"방금 지적한 목록은 다음과 같습니다 … 놓친 것만(missed only) 추가하세요." 프롬프트와 `recall pass: first 8, added 1, duplicates dropped 1`.*
+![리포트에 기록된 보강 프롬프트와 재확인 패스 집계](docs/images/04-recall-prompt.ko.png)
+*"방금 지적한 목록은 다음과 같습니다 … 놓친 것만(missed only) 추가하세요." 프롬프트와 `재확인 패스: 첫 번째 8, 추가 1, 중복 제외 1`(한국어 화면).*
 
 ### 코드 둘러보기
 - [`src/pdf_redpen/grounding.py`](src/pdf_redpen/grounding.py): 5단계 위치 찾기(`ground`)와 이웃 쪽 탐색(`ground_finding`).
@@ -224,7 +242,7 @@ for p in report.placements:
 
 | 공개 이름 | 설명 |
 |---|---|
-| `annotate_pdf(src, findings, dst, *, max_per_page=20, author=...)` | 지적 목록을 PDF에 달아 `dst`에 저장하고 `Report` 반환 |
+| `annotate_pdf(src, findings, dst, *, max_per_page=20, author=..., lang=None)` | 지적 목록을 PDF에 달아 `dst`에 저장하고 `Report` 반환. `lang`(`"en"`·`"ko"`)은 PDF 안 메모의 언어이며, 기본은 영어입니다(`pdf_redpen.i18n.set_lang("ko")`를 부르면 한국어. CLI가 대신 불러 줍니다) |
 | `Finding(page, quote, comment, severity=None)` | 지적 한 건 |
 | `Report` | `placements`(지적별 `status`·`stage`), `pages` 등 집계 |
 | `ground(page, quote, used)` | 저수준 함수: 내부 `PageText`가 필요해 보통은 `annotate_pdf`만 씁니다 |
@@ -235,6 +253,7 @@ for p in report.placements:
 - 2단 레이아웃은 글자 읽는 순서가 섞일 수 있어 여러 줄 인용이 안 잡힐 수 있습니다.
 - 뷰어마다 형광펜·메모 모양이 조금 다를 수 있습니다.
 - 실제 모드는 모델 속도에 좌우되고, 쪽 글자가 엔드포인트로 전송됩니다.
+- 화면 언어의 알려진 한계: 화면 언어 옵션은 명령 앞에만 둘 수 있고(`pdf-redpen --lang ko demo`), argparse가 붙이는 제목과 `-h`·`--version` 설명 줄은 영어로 남으며, 라이브러리의 기본 PDF 메모는 `lang=`을 주지 않으면 영어입니다.
 
 ## 언제 쓰나
 - 독립 PDF 파일에 LLM이나 다른 도구가 내놓은 지적을 원문 위치 주석으로 달고 싶다면 이 도구가 맞습니다. 위치를 못 찾은 지적은 쪽 메모로 남깁니다.
@@ -245,7 +264,10 @@ for p in report.placements:
 ## 자주 겪는 문제
 | 증상 | 원인 | 해결 |
 |---|---|---|
-| `error: No model configured ...` (종료 코드 2) | 실제 `review`인데 모델 미설정 | `PDF_REDPEN_MODEL` 설정, 또는 `demo`/`--mock DIR` 사용 |
+| `오류: 실제 검토에 쓸 모델이 설정되지 않았습니다. ...` (영어 화면에서는 `error: No model configured ...`, 종료 코드 2) | 실제 `review`인데 모델 미설정 | `PDF_REDPEN_MODEL` 설정, 또는 `demo`/`--mock DIR` 사용 |
+| `오류: <경로> 에 접근할 수 없습니다: ...` (종료 코드 2) | 출력 폴더가 읽기 전용이거나 없거나 가득 참 | 다른 `-o` 경로를 고르고 권한을 확인 |
+| 화면이 원하는 언어가 아님 | 로캘이나 `PDF_REDPEN_LANG`이 정함 | 명령 앞에 `--lang en` 또는 `--lang ko` |
+| `unrecognized arguments: --lang ko` (종료 코드 2) | 화면 언어 옵션을 명령 뒤에 둠 | 명령 앞에 둡니다: `pdf-redpen --lang ko demo` |
 | 쪽이 `skipped_no_text_layer`로 표시됨 | 스캔·빈 쪽·글자 매핑 깨짐 | 글자 층이 있는 PDF 사용(OCR은 지원 안 함) |
 | 지적이 `memo_not_found`가 됨 | 모델이 본문에 없는 문장을 만들어 냄 | 쪽 모서리 메모를 확인. 필요하면 `--recall-pass`나 지침 보강 |
 | 칠한 범위가 인용보다 길다 | `prefix25` 단계로 찾음 | 리포트에서 단계 확인 후 눈으로 점검 |
