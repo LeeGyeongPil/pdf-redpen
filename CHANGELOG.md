@@ -4,6 +4,21 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 uses [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] - 2026-11-12
+
+### Added
+- Screen language: English and Korean. Pick it with the global option `pdf-redpen --lang en|ko <command>`, the `PDF_REDPEN_LANG` environment variable, or the locale (`LC_ALL`, `LC_MESSAGES`, `LANG`; a value starting with `ko` means Korean, anything else English). It covers `--help`, progress and summary lines, error messages and the Markdown report.
+- File problems (read-only output folder, permission denied, disk full) now print a clear `error: cannot access <path>: <reason>` message with exit code 2 instead of `unexpected error: PermissionError`.
+- `annotate_pdf(..., lang=)` and `pdf_redpen.i18n` (message table, `set_lang`).
+
+### Changed
+- The notes written into the PDF follow the screen language: `[not found]` / `[over cap]` / `(loose match)` in English, `[위치 못 찾음]` / `[상한 초과]` / `(느슨 일치)` in Korean. Before, they were always Korean, so English users now see English tags.
+- `review --lang` is unchanged: it is still the prompt language (default `ko`), not the screen language. Its help text says so.
+- `InputError` and `LLMError` carry a message id and parameters; `str(exc)` is still the English text.
+
+### Unchanged
+- `report.json` (always English), exit codes, environment variable names, prompts and the bundled data.
+
 ## [0.1.4] - 2026-11-10
 
 ### Fixed
