@@ -4,6 +4,13 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+## [0.2.1] - 2026-11-18
+
+### Fixed
+- A findings JSON or `--instructions` file that is not UTF-8 (CP949, UTF-16, ...) now ends with `error: <path> is not UTF-8 text ...` and exit code 2 instead of `unexpected error: UnicodeDecodeError` and exit code 1. A UTF-8 BOM is now accepted.
+
 ## [0.2.0] - 2026-11-12
 
 ### Added
