@@ -104,3 +104,27 @@ def test_review_partial_failure_warns_but_exits_0(tmp_path, capsys, monkeypatch)
                      "--pages", "1-2"]) == 0
     err = capsys.readouterr().err
     assert "page 1: error - LLMError: boom" in err and "1 page(s) failed" in err
+
+
+def test_non_utf8_inputs_are_exit_2(tmp_path, capsys):
+    cp = tmp_path / "cp.json"
+    cp.write_bytes('[{"page":1,"quote":"근거","comment":"c"}]'.encode("cp949"))
+    u16 = tmp_path / "u16.json"
+    u16.write_text('[{"page":1,"quote":"x","comment":"c"}]', encoding="utf-16")
+    out = str(tmp_path / "o.pdf")
+    for lang, needle in (("en", "is not UTF-8 text"), ("ko", "UTF-8 텍스트가 아닙니다")):
+        for f in (cp, u16):
+            assert main(["--lang", lang, "apply", str(PLAIN_PDF), str(f), "-o", out]) == 2
+            err = capsys.readouterr().err
+            assert needle in err and "unexpected" not in err
+    ins = tmp_path / "ins.md"
+    ins.write_bytes(b"\xff\xfe")
+    assert main(["--lang", "en", "review", str(PLAIN_PDF), "--mock", str(RECORDED), "--instructions", str(ins),
+                 "-o", out]) == 2
+    assert "is not UTF-8 text" in capsys.readouterr().err
+
+
+def test_utf8_bom_inputs_are_accepted(tmp_path):
+    f = tmp_path / "bom.json"
+    f.write_bytes(b"\xef\xbb\xbf" + b'[{"page": 1, "quote": "x", "comment": "c"}]')
+    assert main(["apply", str(PLAIN_PDF), str(f), "-o", str(tmp_path / "o.pdf")]) == 0
