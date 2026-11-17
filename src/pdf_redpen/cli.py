@@ -16,6 +16,14 @@ from .report import mock_notice, page_detail, recall_line, stage_line, summary_l
 from .writer import DEFAULT_AUTHOR, clear_annotations
 
 
+def _read_text(path: Path) -> str:
+    """Read a user-supplied text file as UTF-8 (a leading BOM is accepted)."""
+    try:
+        return path.read_text(encoding="utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise InputError("err.not_utf8", path=path, byte=f"0x{exc.object[exc.start]:02x}", pos=exc.start) from exc
+
+
 def parse_pages(spec: Optional[str]) -> Optional[list[int]]:
     """'1-3,5' -> [1, 2, 3, 5]."""
     if not spec:
@@ -91,7 +99,7 @@ def cmd_review(a: argparse.Namespace) -> int:
         ipath = Path(a.instructions)
         if not ipath.is_file():
             raise InputError("err.instructions_missing", path=ipath)
-        instructions = ipath.read_text(encoding="utf-8")
+        instructions = _read_text(ipath)
     client: Client
     if a.mock:
         client, mode = MockClient(Path(a.mock)), "review (mock: practice replay)"
@@ -112,7 +120,7 @@ def cmd_apply(a: argparse.Namespace) -> int:
     _check_out(src, dst)
     if not fpath.is_file():
         raise InputError("err.findings_missing", path=fpath)
-    findings = findings_from_json(fpath.read_text(encoding="utf-8"), str(fpath))
+    findings = findings_from_json(_read_text(fpath), str(fpath))
     report = run_pipeline(src, dst, JsonProvider(findings), mode="apply",
                           max_per_page=a.max_highlights_per_page, author=DEFAULT_AUTHOR)
     return _finish(report, dst)

@@ -52,6 +52,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "err.mock_record": "Use either --mock (replay) or --record (save real answers), not both.",
         "err.instructions_missing": "Instructions file not found: {path}.",
         "err.findings_missing": "Findings file not found: {path}.",
+        "err.not_utf8": "{path} is not UTF-8 text (byte {byte} at position {pos}); save it as UTF-8.",
         "err.cap_min": "--max-highlights-per-page must be 1 or more.",
         "err.pages_outside": "Page(s) {pages} are outside this PDF (it has {n_pages} pages).",
         "err.item_page": "item {i}: page {page} but the PDF has {n_pages} page(s). "
@@ -156,6 +157,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "err.mock_record": "--mock(재생)과 --record(실제 답변 저장) 중 하나만 쓰세요.",
         "err.instructions_missing": "지침 파일을 찾을 수 없습니다: {path}.",
         "err.findings_missing": "지적 사항 파일을 찾을 수 없습니다: {path}.",
+        "err.not_utf8": "{path} 은(는) UTF-8 텍스트가 아닙니다({pos}번째 위치의 바이트 {byte}). UTF-8 로 저장해 주세요.",
         "err.cap_min": "--max-highlights-per-page 는 1 이상이어야 합니다.",
         "err.pages_outside": "{pages} 쪽은 이 PDF 범위 밖입니다(전체 {n_pages}쪽).",
         "err.item_page": "{i}번 항목: {page}쪽이지만 PDF는 {n_pages}쪽까지 있습니다. "
