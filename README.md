@@ -65,7 +65,7 @@ Open `out/reviewed.pdf` in any PDF viewer. A finding that was located becomes a 
 Exit codes:
 - `0` Normal. It is 0 even if no findings were located (reported in the report), and if only some pages fail it prints `warning: N page(s) failed ...` to stderr and is still 0.
 - `1` **All** pages sent to the model failed (`error: every page failed; ...`), or an unexpected error.
-- `2` Input error (nonexistent file, bad JSON, out-of-range `page`, unknown `severity`, no model configured, etc.) or a file you cannot read or write (`error: cannot access <path>: <reason>`, for example a read-only output folder).
+- `2` Input error (nonexistent file, bad JSON, out-of-range `page`, unknown `severity`, a findings or instructions file that is not UTF-8, no model configured, etc.) or a file you cannot read or write (`error: cannot access <path>: <reason>`, for example a read-only output folder).
 
 ### Screen language (English / Korean)
 Everything you read in the terminal (help, progress and summary lines, error messages) and the Markdown report can be shown in English or Korean. The notes written into the PDF follow the same language. The first one that is set wins:
